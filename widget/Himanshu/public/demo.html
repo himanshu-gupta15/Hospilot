@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarePlus Hospital — HIS</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #0f172a; display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    aside {
+      width: 240px; flex-shrink: 0; background: #fff; border-right: 1px solid #e2e8f0;
+      display: flex; flex-direction: column; transition: transform 0.3s ease;
+    }
+    .sidebar-brand {
+      padding: 18px 20px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .brand-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 15px; flex-shrink: 0;
+    }
+    .brand-name { font-size: 14px; font-weight: 700; color: #0f172a; }
+    .brand-sub  { font-size: 10px; color: #94a3b8; }
+
+    nav { padding: 12px 10px; flex: 1; }
+    .nav-item {
+      padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 10px; color: #64748b;
+      transition: background 0.15s, color 0.15s; margin-bottom: 2px;
+    }
+    .nav-item:hover  { background: #f8fafc; color: #1e293b; }
+    .nav-item.active { background: #eff6ff; color: #3b82f6; font-weight: 500; }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    .sidebar-footer { padding: 16px; border-top: 1px solid #e2e8f0; }
+    .user-row { display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%; background: #eff6ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: #3b82f6; flex-shrink: 0;
+    }
+    .user-name { font-size: 13px; font-weight: 500; color: #0f172a; }
+    .user-role { font-size: 11px; color: #94a3b8; }
+
+    /* ── Main ── */
+    main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: #f8fafc; }
+
+    .topbar {
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; position: relative;
+    }
+    .mobile-header-center { display: none; font-weight: 700; color: #0052cc; font-size: 18px; }
+    .page-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+    .page-sub   { font-size: 13px; color: #94a3b8; margin-top: 1px; }
+    .topbar-actions { display: flex; align-items: center; gap: 12px; }
+    .search-bar {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0;
+      background: #f8fafc; color: #1e293b; font-size: 13px; width: 260px; outline: none;
+    }
+    .icon-action {
+      width: 36px; height: 36px; border-radius: 8px; border: 1px solid #e2e8f0;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #64748b; font-size: 16px; transition: background 0.15s;
+      position: relative;
+    }
+    .icon-action:hover { background: #f8fafc; }
+    
+    .bell-badge {
+      position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
+      border-radius: 50%; background: #ef4444; border: 1px solid white;
+    }
+
+    .content { padding: 28px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Stats Card Row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .stat-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .stat-label  { font-size: 12px; color: #94a3b8; font-weight: 500; margin-bottom: 8px; }
+    .stat-value  { font-size: 26px; font-weight: 700; color: #0f172a; }
+    .stat-delta  { font-size: 12px; margin-top: 4px; }
+    .delta-up   { color: #22c55e; }
+    .delta-down { color: #ef4444; }
+
+    /* ── Content Grid ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;
+    }
+    .card-title { font-size: 14px; font-weight: 600; color: #0f172a; margin-bottom: 16px; }
+    .card-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 8px; border-bottom: 1px solid #f1f5f9; font-size: 13px;
+      cursor: pointer; transition: background-color 0.15s; border-radius: 6px;
+    }
+    .card-row:hover {
+      background-color: #f8fafc;
+    }
+    .card-row:last-child { border-bottom: none; }
+    .card-label { color: #64748b; }
+    .card-val   { font-weight: 600; color: #0f172a; }
+
+    /* Bed status indicators */
+    .bed-progress-container {
+      width: 100%; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
+    }
+    .bed-bar-bg { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+    .bed-bar-fill { height: 100%; background: #0052cc; border-radius: 3px; }
+
+    /* OT table */
+    .ot-row { display: grid; grid-template-columns: 80px 1fr 100px 100px; align-items: center; gap: 12px; padding: 10px 8px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+    .ot-row:not(:first-child) {
+      cursor: pointer; transition: background-color 0.15s; border-radius: 6px;
+    }
+    .ot-row:not(:first-child):hover {
+      background-color: #f8fafc;
+    }
+    .ot-row:last-child { border-bottom: none; }
+    .ot-room { font-weight: 600; color: #0f172a; }
+    .ot-case { color: #64748b; }
+    .ot-status { padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; }
+    .ot-active  { background: #dcfce7; color: #16a34a; }
+    .ot-waiting { background: #fef9c3; color: #ca8a04; }
+    .ot-done    { background: #f1f5f9; color: #64748b; }
+
+    .badge-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-red  { background: #fee2e2; color: #ef4444; }
+    .badge-green { background: #dcfce7; color: #16a34a; }
+    .badge-blue { background: #dbeafe; color: #3b82f6; }
+
+    /* ── Hospilot Floating Assistant UI ── */
+    #hospilot-widget {
+      position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .widget-trigger {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white; border: none; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .widget-trigger:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 24px rgba(37, 99, 235, 0.5);
+    }
+    .widget-panel {
+      position: absolute; bottom: 70px; right: 0; width: 380px;
+      background: #ffffff; border: 1px solid #e2e8f0;
+      border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+      display: none; flex-direction: column; overflow: hidden;
+      transition: all 0.3s ease; max-height: 90vh;
+    }
+    
+    /* Widget header styling matching Screenshot 2 */
+    .widget-header-premium {
+      padding: 16px 20px; background: #2563eb;
+      color: white; display: flex; align-items: center; gap: 12px; position: relative;
+    }
+    .widget-bot-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .widget-header-text { display: flex; flex-direction: column; }
+    .widget-header-title { font-weight: 700; font-size: 15px; }
+    .widget-header-sub { font-size: 10px; font-weight: 600; opacity: 0.9; margin-top: 1px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; }
+    .widget-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+    .widget-close-btn {
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.15);
+      border: none; color: white; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px; transition: background 0.2s;
+    }
+    .widget-close-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+    /* Widget body & input area */
+    .widget-body-premium { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .widget-section-title { font-weight: 700; font-size: 15px; color: #0f172a; }
+    .widget-description-text { font-size: 13px; color: #475569; line-height: 1.5; }
+    
+    /* Quick Selection Chips */
+    .widget-chips-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .widget-chip {
+      padding: 8px 12px; border-radius: 10px; border: 1px solid #e2e8f0;
+      background: #eff6ff; color: #1e293b; font-size: 12px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .widget-chip:hover { background: #dbeafe; border-color: #bfdbfe; }
+    
+    /* Input Container Box style */
+    .widget-input-box {
+      border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc;
+      padding: 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .widget-textarea-premium {
+      width: 100%; height: 70px; border: none; background: transparent;
+      outline: none; font-size: 13px; resize: none; font-family: inherit;
+      color: #0f172a; line-height: 1.4;
+    }
+    .widget-textarea-premium::placeholder { color: #94a3b8; }
+    .widget-input-footer { display: flex; align-items: center; justify-content: space-between; }
+    .widget-input-actions { display: flex; align-items: center; gap: 12px; color: #64748b; font-size: 16px; cursor: pointer; }
+    .widget-input-action-icon:hover { color: #0f172a; }
+    
+    .widget-generate-btn {
+      padding: 8px 14px; border-radius: 10px; background: #0052cc;
+      color: white; border: none; cursor: pointer; font-weight: 700;
+      font-size: 12px; display: flex; align-items: center; gap: 4px;
+      transition: background 0.2s;
+    }
+    .widget-generate-btn:hover { background: #0747a6; }
+    
+    .widget-footnote-lock {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      font-size: 11px; color: #94a3b8; font-weight: 500; margin-top: 4px;
+    }
+
+    /* ── Hospilot Plan Status Views (Screenshot 3) ── */
+    .widget-plan-header {
+      padding: 14px 20px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+    }
+    .widget-plan-mission-label { font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }
+    .widget-plan-mission-val { font-size: 14px; font-weight: 600; color: #0f172a; margin-top: 4px; }
+    .widget-plan-status-pill {
+      display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+      border-radius: 12px; font-size: 11px; font-weight: 700; margin-top: 6px;
+    }
+    .status-pill-planning { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .status-pill-ready { background: #e6fcf5; color: #059669; border: 1px solid #a7f3d0; }
+    .status-pill-error { background: #fdf2f2; color: #dc2626; border: 1px solid #fca5a5; }
+
+    .widget-plan-body {
+      padding: 24px 20px; display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 16px;
+    }
+    
+    /* Custom loader / spinner */
+    .widget-circle-loader {
+      position: relative; width: 64px; height: 64px;
+      border: 4px solid #f1f5f9; border-radius: 50%;
+      border-top-color: #2563eb; animation: spin 1s linear infinite;
+    }
+    .widget-circle-loader.ready {
+      animation: none; border-color: #059669; background: #e6fcf5;
+      display: flex; align-items: center; justify-content: center; color: #059669; font-size: 24px;
+    }
+    
+    .widget-plan-title { font-size: 18px; font-weight: 700; color: #0f172a; }
+    .widget-plan-desc { font-size: 13px; color: #64748b; line-height: 1.5; max-width: 280px; }
+    
+    .widget-plan-view-btn {
+      width: 100%; padding: 12px; border-radius: 12px; background: #0052cc;
+      color: white; border: none; cursor: pointer; font-weight: 700;
+      font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.2s;
+    }
+    .widget-plan-view-btn:hover { background: #0747a6; }
+    
+    .widget-plan-footer {
+      padding: 14px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;
+      display: flex; gap: 10px;
+    }
+    .widget-footer-btn {
+      flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0;
+      background: white; color: #334155; font-weight: 700; font-size: 13px;
+      cursor: pointer; text-align: center; transition: background 0.2s;
+    }
+    .widget-footer-btn:hover { background: #f8fafc; }
+    .widget-footer-btn-primary {
+      background: #0052cc; color: white; border: none;
+    }
+    .widget-footer-btn-primary:hover { background: #0747a6; }
+
+    /* Modal Overlay for Plan Iframe */
+    .hospilot-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+      z-index: 9999; display: none; align-items: center; justify-content: center;
+    }
+    .modal-content {
+      width: 90%; max-width: 1200px; height: 85%; background: white;
+      border-radius: 16px; display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+    .modal-header {
+      padding: 16px 24px; border-bottom: 1px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f8fafc;
+    }
+    .modal-title { font-weight: 700; color: #0f172a; font-size: 16px; }
+    .modal-close {
+      background: #e2e8f0; border: none; width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: 16px; color: #64748b;
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: #cbd5e1; color: #0f172a; }
+    .iframe-container { flex: 1; width: 100%; height: 100%; background: #f8fafc; }
+
+    /* ── Responsive Viewport Adjustments ── */
+    @media (max-width: 1024px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .search-bar { width: 200px; }
+      .content { padding: 20px; }
+    }
+
+    @media (max-width: 768px) {
+      body { flex-direction: column; height: auto; min-height: 100vh; overflow-y: auto; }
+      aside {
+        position: fixed; left: 0; top: 0; bottom: 0; z-index: 1002;
+        transform: translateX(-100%);
+      }
+      aside.active { transform: translateX(0); }
+      
+      .topbar { padding: 14px 16px; justify-content: space-between; }
+      .mobile-header-left { display: block !important; font-size: 20px; cursor: pointer; color: #475569; }
+      .mobile-header-center { display: block !important; }
+      
+      /* Hide search, title in header on mobile */
+      .topbar .search-bar, .topbar .page-title, .topbar .page-sub, .topbar .icon-action:last-of-type { display: none; }
+      
+      .content { padding: 16px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr; gap: 12px; }
+      
+      /* Widget panel width */
+      .widget-panel { width: 90vw; max-width: 380px; }
+    }
+
+    @media (max-width: 560px) {
+      .widget-panel { right: -12px; bottom: 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside id="sidebar-drawer">
+    <div class="sidebar-brand">
+      <div class="brand-icon">+</div>
+      <div>
+        <div class="brand-name">CarePlus</div>
+        <div class="brand-sub">Hospital HIS</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="switchTab(this, 'Dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="switchTab(this, 'IPD')"><span class="nav-icon">🏥</span> IPD</div>
+      <div class="nav-item" onclick="switchTab(this, 'OPD')"><span class="nav-icon">🩺</span> OPD</div>
+      <div class="nav-item" onclick="switchTab(this, 'ER')"><span class="nav-icon">🚨</span> ER</div>
+      <div class="nav-item" onclick="switchTab(this, 'Bed Management')"><span class="nav-icon">🛏</span> Bed Management</div>
+      <div class="nav-item" onclick="switchTab(this, 'Lab')"><span class="nav-icon">🔬</span> Lab</div>
+      <div class="nav-item" onclick="switchTab(this, 'Pharmacy')"><span class="nav-icon">💊</span> Pharmacy</div>
+      <div class="nav-item" onclick="switchTab(this, 'Billing')"><span class="nav-icon">💰</span> Billing</div>
+      <div class="nav-item" onclick="switchTab(this, 'Reports')"><span class="nav-icon">📁</span> Reports</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">N</div>
+        <div>
+          <div class="user-name">Dr. Neha Sharma</div>
+          <div class="user-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main>
+    <!-- Responsive Header top bar -->
+    <div class="topbar">
+      <!-- Mobile menu hamburger toggle -->
+      <span class="mobile-header-left" style="display: none;" onclick="toggleMobileSidebar(event)">☰</span>
+      <span class="mobile-header-center">CarePlus</span>
+      
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Overview of hospital operations</div>
+      </div>
+      <div class="topbar-actions">
+        <input class="search-bar" placeholder="Search patients, menus, transactions…">
+        <div class="icon-action">
+          🔔
+          <span class="bell-badge"></span>
+        </div>
+        <div class="icon-action">❓</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="dashboard-content">
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Today's Admissions</div>
+            <div class="stat-value">76</div>
+            <div class="stat-delta delta-up">↑ 12% vs yesterday</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Occupancy</div>
+            <div class="stat-value">82%</div>
+            <div class="stat-delta delta-up">↑ 5% vs yesterday</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Beds</div>
+            <div class="stat-value">350</div>
+            <div class="stat-delta" style="color:#94a3b8">287 Occupied · 48 Vacant · 15 Blocked</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">ER Wait (avg)</div>
+            <div class="stat-value">34m</div>
+            <div class="stat-delta delta-down">↑ 8m vs yesterday</div>
+          </div>
+        </div>
+
+        <!-- Content grid -->
+        <div class="grid-2" style="margin-top: 20px;">
+          <!-- Bed Overview -->
+          <div class="card">
+            <div class="card-title">Bed Overview by Unit</div>
+            
+            <div class="card-row" style="border-bottom:none; flex-direction:column; align-items:stretch; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span class="card-label" style="font-weight:600; color:#0f172a;">ICU</span>
+                <span class="card-val">18 / 24 <span class="badge-count badge-red">6</span></span>
+              </div>
+              <div class="bed-bar-bg"><div class="bed-bar-fill" style="width: 75%;"></div></div>
+            </div>
+
+            <div class="card-row" style="border-bottom:none; flex-direction:column; align-items:stretch; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span class="card-label" style="font-weight:600; color:#0f172a;">General Ward</span>
+                <span class="card-val">142 / 180 <span class="badge-count badge-green">38</span></span>
+              </div>
+              <div class="bed-bar-bg"><div class="bed-bar-fill" style="width: 78.8%;"></div></div>
+            </div>
+
+            <div class="card-row" style="border-bottom:none; flex-direction:column; align-items:stretch; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:13px;">
+                <span class="card-label" style="font-weight:600; color:#0f172a;">Emergency</span>
+                <span class="card-val">24 / 30 <span class="badge-count badge-red">6</span></span>
+              </div>
+              <div class="bed-bar-bg"><div class="bed-bar-fill" style="width: 80%;"></div></div>
+            </div>
+          </div>
+
+          <!-- OT Overview -->
+          <div class="card">
+            <div class="card-title">OT Overview — Today</div>
+            <div class="ot-row" style="color:#94a3b8;font-size:11px;font-weight:600;padding-bottom:6px; cursor:default;">
+              <span>ROOM</span><span>CASE</span><span>STATUS</span><span>TIME</span>
+            </div>
+            <div class="ot-row">
+              <span class="ot-room">OT 1</span>
+              <span class="ot-case">Appendectomy — Dr. Arjun</span>
+              <span class="ot-status ot-active">In Progress</span>
+              <span style="color:#64748b">2:00 PM</span>
+            </div>
+            <div class="ot-row">
+              <span class="ot-room">OT 2</span>
+              <span class="ot-case">Knee Replacement — Dr. Meera</span>
+              <span class="ot-status ot-waiting">Prep</span>
+              <span style="color:#64748b">3:30 PM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hospital Activity Timeline (Screenshot 1 Bottom) -->
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-title">Hospital Activity</div>
+          <div style="position: relative; padding-left: 36px; display: flex; flex-direction: column; gap: 20px;">
+            <!-- vertical line -->
+            <div style="position: absolute; left: 11px; top: 8px; bottom: 8px; width: 2px; background: #e2e8f0;"></div>
+            
+            <!-- item 1 -->
+            <div style="position: relative;">
+              <!-- blue circle dot -->
+              <div style="position: absolute; left: -31px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid #2563eb; background: white; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 4px; height: 4px; border-radius: 50%; background: #2563eb;"></div>
+              </div>
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px;">
+                <div style="font-size: 13px; font-weight: 600; color: #0f172a;">New ICU admission</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">09:42</div>
+              </div>
+            </div>
+            
+            <!-- item 2 -->
+            <div style="position: relative;">
+              <!-- grey circle dot -->
+              <div style="position: absolute; left: -31px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #cbd5e1; background: white;"></div>
+              <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px;">
+                <div style="font-size: 13px; font-weight: 600; color: #0f172a;">OT 2 preparation started</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">09:35</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Dynamic Section View -->
+      <div id="dynamic-content" style="display: none; padding: 20px 0;">
+        <div class="card" style="min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px;">
+          <div id="dynamic-icon" style="font-size: 64px;">🏥</div>
+          <h2 id="dynamic-title" style="font-size: 24px; font-weight: 700; color: #0f172a;">IPD</h2>
+          <p id="dynamic-description" style="font-size: 14px; color: #64748b; max-width: 450px;">Section details and active workflows.</p>
+          <button class="widget-btn btn-primary" onclick="showView('Dashboard')" style="padding: 10px 20px;">Return to Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Hospilot Floating Widget (Redesigned as per Screenshot 2 & 3) -->
+  <div id="hospilot-widget">
+    <button class="widget-trigger" onclick="toggleWidgetPanel()">✨</button>
+    <div class="widget-panel" id="widget-panel">
+      <!-- 1. WIDGET HEADER -->
+      <div class="widget-header-premium">
+        <div class="widget-bot-avatar">🤖</div>
+        <div class="widget-header-text">
+          <span class="widget-header-title">Hospilot AI</span>
+          <span class="widget-header-sub"><span class="widget-live-dot"></span>AI OPERATIONS COPILOT</span>
+        </div>
+        <button class="widget-close-btn" onclick="toggleWidgetPanel()">×</button>
+      </div>
+
+      <!-- 2. WIDGET BODY - GOAL INPUT (Screenshot 2) -->
+      <div id="widget-input-state" class="widget-body-premium">
+        <span class="widget-section-title">What would you like to plan?</span>
+        <span class="widget-description-text">Describe a hospital operations goal in plain English, and Hospilot will generate a live execution plan.</span>
+        
+        <!-- Chips/Quick select -->
+        <div class="widget-chips-row">
+          <div class="widget-chip" onclick="selectQuickGoal('Check ICU bed capacity for tonight')">⊞ Check ICU Capacity</div>
+          <div class="widget-chip" onclick="selectQuickGoal('Optimize shift staffing for General Ward')">🕒 Optimize Staffing</div>
+          <div class="widget-chip" onclick="selectQuickGoal('Audit medical supply stock levels')">📋 Supply Audit</div>
+        </div>
+
+        <!-- Custom Input container -->
+        <div class="widget-input-box">
+          <textarea class="widget-textarea-premium" id="goal-input" placeholder="e.g. Check ICU bed capacity for tonight..."></textarea>
+          <div class="widget-input-footer">
+            <div class="widget-input-actions">
+              <span class="widget-input-action-icon">🎤</span>
+              <span class="widget-input-action-icon">📎</span>
+            </div>
+            <button class="widget-generate-btn" id="submit-btn" onclick="submitGoal()">Generate Plan ▷</button>
+          </div>
+        </div>
+
+        <!-- Status warning/info -->
+        <div class="widget-status" id="status-container"></div>
+        <span class="widget-footnote-lock">🔒 Secure AI Environment</span>
+      </div>
+
+      <!-- 3. WIDGET BODY - PLANNING GRAPH & VIEWER (Screenshot 3) -->
+      <div id="widget-plan-state" style="display: none; flex-direction: column;">
+        <div class="widget-plan-header">
+          <div class="widget-plan-mission-label">CURRENT MISSION</div>
+          <div class="widget-plan-mission-val" id="active-goal-text">Check ICU bed capacity for tonight</div>
+          <div class="widget-plan-status-pill status-pill-planning" id="status-badge-pill">Planning...</div>
+        </div>
+
+        <div class="widget-plan-body">
+          <div class="widget-circle-loader" id="plan-circle-loader"></div>
+          <div class="widget-plan-title" id="plan-title-text">Loading Action Plan</div>
+          <div class="widget-plan-desc" id="plan-desc-text">Hospilot is synthesizing operational data and preparing the live plan view.</div>
+          
+          <button class="widget-plan-view-btn" id="view-plan-btn" style="display: none;" onclick="openPlanViewer()">👁 View Plan Now</button>
+        </div>
+
+        <div class="widget-plan-footer">
+          <button class="widget-footer-btn" onclick="cancelPlanAndBack()">← Back</button>
+          <button class="widget-footer-btn widget-footer-btn-primary" onclick="alert('Viewing execution log...')">View Details</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan Viewer Modal -->
+  <div class="hospilot-modal" id="hospilot-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Hospilot Live Plan Viewer</span>
+        <button class="modal-close" onclick="closePlanViewer()">×</button>
+      </div>
+      <div class="iframe-container" id="iframe-container">
+        <!-- Iframe will be injected dynamically here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- General Detail Modal -->
+  <div class="hospilot-modal" id="detail-modal" onclick="closeDetailModal()">
+    <div class="modal-content" style="max-width: 450px; height: auto;" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title" id="detail-modal-title">Details</span>
+        <button class="modal-close" onclick="closeDetailModal()">×</button>
+      </div>
+      <div style="padding: 24px;" id="detail-modal-body">
+        <!-- Details injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Dropdown Panel -->
+  <div id="notification-dropdown" style="display: none; position: absolute; top: 56px; right: 80px; width: 280px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1001; overflow: hidden;">
+    <div style="padding: 12px 16px; font-weight: 600; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #0f172a; display: flex; justify-content: space-between; align-items: center;">
+      <span>Notifications</span>
+      <span class="badge-count badge-red" style="width: 18px; height: 18px; font-size: 10px;">3</span>
+    </div>
+    <div style="padding: 8px 0; max-height: 240px; overflow-y: auto;">
+      <div style="padding: 10px 16px; font-size: 12px; border-bottom: 1px solid #f8fafc; cursor: pointer; transition: background 0.15s;">
+        <div style="font-weight: 500; color: #0f172a; margin-bottom: 2px;">• ICU occupancy increased</div>
+        <div style="color: #94a3b8; font-size: 10px;">5 mins ago</div>
+      </div>
+      <div style="padding: 10px 16px; font-size: 12px; border-bottom: 1px solid #f8fafc; cursor: pointer; transition: background 0.15s;">
+        <div style="font-weight: 500; color: #0f172a; margin-bottom: 2px;">• New admission received</div>
+        <div style="color: #94a3b8; font-size: 10px;">12 mins ago</div>
+      </div>
+      <div style="padding: 10px 16px; font-size: 12px; cursor: pointer; transition: background 0.15s;">
+        <div style="font-weight: 500; color: #0f172a; margin-bottom: 2px;">• OT 2 preparation started</div>
+        <div style="color: #94a3b8; font-size: 10px;">45 mins ago</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Dropdown Panel -->
+  <div id="help-panel" style="display: none; position: absolute; top: 56px; right: 30px; width: 320px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1001; padding: 16px;">
+    <h4 style="font-weight: 600; font-size: 14px; margin-bottom: 10px; color: #0f172a;">Dashboard Help</h4>
+    <ul style="padding-left: 18px; font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 8px; line-height: 1.4;">
+      <li><strong>Dashboard Navigation:</strong> Use the sidebar items to navigate through hospital sections.</li>
+      <li><strong>Search Bar:</strong> Type to dynamically filter the Bed and OT list rows in real-time.</li>
+      <li><strong>Hospilot Assistant:</strong> Click the floating icon button in the bottom right to open the operations copilot.</li>
+      <li><strong>Planning Workflow:</strong> Select a quick chip or write a goal, then click Generate Plan. Once complete, click View Plan Now.</li>
+    </ul>
+  </div>
+
+  <script>
+    let activeSessionId = null;
+    let activeToken = null;
+    let pollTimer = null;
+
+    function toggleWidgetPanel() {
+      const panel = document.getElementById('widget-panel');
+      if (panel.style.display === 'flex') {
+        panel.style.display = 'none';
+      } else {
+        panel.style.display = 'flex';
+      }
+    }
+
+    function toggleMobileSidebar(e) {
+      e.stopPropagation();
+      const sidebar = document.getElementById('sidebar-drawer');
+      sidebar.classList.toggle('active');
+    }
+
+    function selectQuickGoal(text) {
+      document.getElementById('goal-input').value = text;
+    }
+
+    function updateStatusUI(message, type) {
+      const statusDiv = document.getElementById('status-container');
+      statusDiv.className = 'widget-status';
+      
+      if (type === 'error') {
+        statusDiv.classList.add('status-error');
+        statusDiv.style.display = 'block';
+        statusDiv.innerHTML = `✗ ${message}`;
+      } else {
+        statusDiv.style.display = 'none';
+      }
+    }
+
+    async function submitGoal() {
+      const goalInput = document.getElementById('goal-input');
+      const submitBtn = document.getElementById('submit-btn');
+      const goal = goalInput.value.trim();
+
+      if (!goal) {
+        updateStatusUI('Please enter a goal first.', 'error');
+        return;
+      }
+
+      // Reset UI warnings
+      updateStatusUI('', 'hide');
+
+      // Set planning state UI fields
+      document.getElementById('widget-input-state').style.display = 'none';
+      document.getElementById('widget-plan-state').style.display = 'flex';
+      
+      document.getElementById('active-goal-text').innerText = goal;
+      
+      // Spinner planning state
+      const loader = document.getElementById('plan-circle-loader');
+      loader.className = 'widget-circle-loader';
+      loader.innerHTML = '';
+      
+      document.getElementById('plan-title-text').innerText = 'Generating Plan';
+      document.getElementById('plan-desc-text').innerText = 'Hospilot is initiating the planning state graph...';
+      
+      const badge = document.getElementById('status-badge-pill');
+      badge.className = 'widget-plan-status-pill status-pill-planning';
+      badge.innerText = 'Planning...';
+      
+      document.getElementById('view-plan-btn').style.display = 'none';
+
+      try {
+        const res = await fetch('/api/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ goal })
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to initiate session.');
+        }
+
+        const data = await res.json();
+        activeSessionId = data.session_id;
+        activeToken = data.token;
+
+        document.getElementById('plan-title-text').innerText = 'Planning mission';
+        document.getElementById('plan-desc-text').innerText = 'Executing the LangGraph pipeline workflows...';
+        
+        startPolling();
+      } catch (error) {
+        // Go back to input state and display error
+        cancelPlanAndBack();
+        updateStatusUI(error.message, 'error');
+      }
+    }
+
+    function startPolling() {
+      const startTime = Date.now();
+      const timeoutMs = 120000;
+
+      pollTimer = setInterval(async () => {
+        if (Date.now() - startTime > timeoutMs) {
+          clearInterval(pollTimer);
+          setPlanErrorState('Planning graph execution timed out.');
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/session/${activeSessionId}`, {
+            headers: { 'Authorization': `Bearer ${activeToken}` }
+          });
+
+          if (!res.ok) {
+            throw new Error('Failed to retrieve session status.');
+          }
+
+          const data = await res.json();
+
+          if (data.status) {
+            document.getElementById('plan-desc-text').innerText = `Current state: ${data.status}...`;
+          }
+
+          // As per assessment criteria: plan is ready when the pipeline field becomes non-empty
+          if (data.pipeline && Object.keys(data.pipeline).length > 0) {
+            clearInterval(pollTimer);
+            setPlanReadyState();
+          }
+        } catch (error) {
+          clearInterval(pollTimer);
+          setPlanErrorState(error.message);
+        }
+      }, 3000);
+    }
+
+    function setPlanReadyState() {
+      const badge = document.getElementById('status-badge-pill');
+      badge.className = 'widget-plan-status-pill status-pill-ready';
+      badge.innerText = '✓ Ready';
+
+      const loader = document.getElementById('plan-circle-loader');
+      loader.classList.add('ready');
+      loader.innerHTML = '✓';
+
+      document.getElementById('plan-title-text').innerText = 'Plan Ready';
+      document.getElementById('plan-desc-text').innerText = 'The execution pipeline has been generated. You can now view the plan board.';
+      document.getElementById('view-plan-btn').style.display = 'block';
+    }
+
+    function setPlanErrorState(msg) {
+      const badge = document.getElementById('status-badge-pill');
+      badge.className = 'widget-plan-status-pill status-pill-error';
+      badge.innerText = 'Failed';
+
+      const loader = document.getElementById('plan-circle-loader');
+      loader.className = 'widget-circle-loader';
+      loader.style.borderTopColor = '#dc2626';
+
+      document.getElementById('plan-title-text').innerText = 'Planning Failed';
+      document.getElementById('plan-desc-text').innerText = msg;
+    }
+
+    function cancelPlanAndBack() {
+      if (pollTimer) clearInterval(pollTimer);
+      document.getElementById('widget-plan-state').style.display = 'none';
+      document.getElementById('widget-input-state').style.display = 'flex';
+      
+      const goalInput = document.getElementById('goal-input');
+      goalInput.disabled = false;
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = false;
+    }
+
+    function openPlanViewer() {
+      const modal = document.getElementById('hospilot-modal');
+      const container = document.getElementById('iframe-container');
+
+      container.innerHTML = '';
+
+      const iframe = document.createElement('iframe');
+      iframe.id = 'hospilot-frame';
+      iframe.src = 'https://hospilot.carer.ai';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+
+      container.appendChild(iframe);
+      modal.style.display = 'flex';
+
+      iframe.addEventListener('load', () => {
+        console.log('[Widget] Iframe loaded, posting widget_init postMessage');
+        iframe.contentWindow.postMessage({
+          type: 'widget_init',
+          token: activeToken,
+          sessionId: activeSessionId
+        }, '*');
+      });
+    }
+
+    function closePlanViewer() {
+      document.getElementById('hospilot-modal').style.display = 'none';
+      document.getElementById('iframe-container').innerHTML = '';
+    }
+
+    // ── Sidebar Navigation Tabs logic ──
+    function switchTab(element, tabName) {
+      document.querySelectorAll('nav .nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      element.classList.add('active');
+      
+      document.querySelector('.page-title').innerText = tabName;
+      document.querySelector('.page-sub').innerText = tabName === 'Dashboard' ? 'Overview of hospital operations' : `Manage ${tabName} operations`;
+
+      const dashContent = document.getElementById('dashboard-content');
+      const dynContent = document.getElementById('dynamic-content');
+      
+      if (tabName === 'Dashboard') {
+        dashContent.style.display = 'block';
+        dynContent.style.display = 'none';
+      } else {
+        dashContent.style.display = 'none';
+        dynContent.style.display = 'block';
+        
+        document.getElementById('dynamic-title').innerText = tabName;
+        const icons = {
+          'IPD': '🏥', 'OPD': '🩺', 'ER': '🚨', 'Bed Management': '🛏',
+          'Lab': '🔬', 'Pharmacy': '💊', 'Billing': '💰', 'Reports': '📁'
+        };
+        document.getElementById('dynamic-icon').innerText = icons[tabName] || '🏥';
+        document.getElementById('dynamic-description').innerText = `This is the dedicated management console for the ${tabName} department. Use this panel to monitor live metrics, staff roster schedules, and patient transaction flows specific to ${tabName} operations.`;
+      }
+      
+      // Close mobile sidebar drawer if open
+      document.getElementById('sidebar-drawer').classList.remove('active');
+    }
+
+    function showView(tabName) {
+      const navItem = Array.from(document.querySelectorAll('nav .nav-item')).find(item => item.innerText.includes(tabName));
+      if (navItem) {
+        switchTab(navItem, tabName);
+      }
+    }
+
+    // ── Dropdowns / Modals ──
+    function closeDetailModal() {
+      document.getElementById('detail-modal').style.display = 'none';
+    }
+    function showDetails(title, contentHtml) {
+      document.getElementById('detail-modal-title').innerText = title;
+      document.getElementById('detail-modal-body').innerHTML = contentHtml;
+      document.getElementById('detail-modal').style.display = 'flex';
+    }
+
+    function showAdmissionsDetail() {
+      showDetails("Today's Admissions Details", `
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><strong>Total Admitted Today:</strong> <span>76</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Discharged Today:</strong> <span>42</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Admissions Trend:</strong> <span style="color:#22c55e; font-weight:600;">↑ 12% vs yesterday</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Pending Admissions:</strong> <span>8</span></div>
+        </div>
+      `);
+    }
+
+    function showOccupancyDetail() {
+      showDetails("Occupancy Details", `
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><strong>Current Occupancy Rate:</strong> <span>82%</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Occupied Beds:</strong> <span>287</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Available Beds:</strong> <span>48</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Target occupancy:</strong> <span>85%</span></div>
+        </div>
+      `);
+    }
+
+    function showBedsDetail() {
+      showDetails("Total Beds details", `
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><strong>Total Beds Capacity:</strong> <span>350</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Occupied Beds:</strong> <span>287</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Vacant Beds:</strong> <span>48</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Blocked/Dirty Beds:</strong> <span>15</span></div>
+        </div>
+      `);
+    }
+
+    function showERWaitDetail() {
+      showDetails("ER Wait (avg) Details", `
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><strong>Average Wait Time:</strong> <span>34m</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Patients in ER Queue:</strong> <span>14</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Triage Level 1 (Critical):</strong> <span style="color:#ef4444; font-weight:600;">2 (Immediate)</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Triage Level 2:</strong> <span>4 (Within 15m)</span></div>
+        </div>
+      `);
+    }
+
+    function showBedRowDetail(ward, occupied, total, vacant) {
+      showDetails(`${ward} Ward details`, `
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><strong>Ward Unit:</strong> <span>${ward}</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Occupied:</strong> <span>${occupied}</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Available:</strong> <span>${vacant}</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Total Beds Capacity:</strong> <span>${total}</span></div>
+        </div>
+      `);
+    }
+
+    function showOTRowDetail(room, caseName, status, time) {
+      showDetails(`${room} Surgery Details`, `
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><strong>Operation Theatre:</strong> <span>${room}</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Case details:</strong> <span>${caseName}</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Current Status:</strong> <span style="font-weight:600;">${status}</span></div>
+          <div style="display:flex; justify-content:space-between;"><strong>Scheduled Time:</strong> <span>${time}</span></div>
+        </div>
+      `);
+    }
+
+    // ── Setup listeners after page load ──
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Stats Cards
+      const statCards = document.querySelectorAll('.stat-card');
+      if (statCards.length >= 4) {
+        statCards[0].addEventListener('click', showAdmissionsDetail);
+        statCards[1].addEventListener('click', showOccupancyDetail);
+        statCards[2].addEventListener('click', showBedsDetail);
+        statCards[3].addEventListener('click', showERWaitDetail);
+      }
+
+      // 2. Bed Overview Rows
+      const bedRows = document.querySelectorAll('.card-row');
+      bedRows.forEach(row => {
+        row.addEventListener('click', () => {
+          const label = row.querySelector('.card-label').innerText;
+          const valText = row.querySelector('.card-val').innerText;
+          const parts = valText.split('/');
+          const occupied = parts[0].trim();
+          const rest = parts[1].trim().split(/\s+/);
+          const total = rest[0].trim();
+          const vacant = rest[1] ? rest[1].trim() : '0';
+          showBedRowDetail(label, occupied, total, vacant);
+        });
+      });
+
+      // 3. OT Overview Rows
+      const otRows = document.querySelectorAll('.ot-row:not(:first-child)');
+      otRows.forEach(row => {
+        row.addEventListener('click', () => {
+          const room = row.querySelector('.ot-room').innerText;
+          const caseName = row.querySelector('.ot-case').innerText;
+          const status = row.querySelector('.ot-status').innerText;
+          const time = row.querySelector('span:last-child').innerText;
+          showOTRowDetail(room, caseName, status, time);
+        });
+      });
+
+      // 4. Search Filter
+      const searchInput = document.querySelector('.search-bar');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase().trim();
+          
+          // Filter beds
+          bedRows.forEach(row => {
+            if (row.innerText.toLowerCase().includes(query)) {
+              row.style.display = 'flex';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+          
+          // Filter OT rows
+          otRows.forEach(row => {
+            if (row.innerText.toLowerCase().includes(query)) {
+              row.style.display = 'grid';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        });
+      }
+
+      // 5. Bell/Notification dropdown
+      const bellIcon = document.querySelector('.topbar-actions .icon-action:first-of-type');
+      if (bellIcon) {
+        bellIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const dropdown = document.getElementById('notification-dropdown');
+          const helpPanel = document.getElementById('help-panel');
+          helpPanel.style.display = 'none';
+          dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        });
+      }
+
+      // 6. Help button
+      const helpIcon = document.querySelector('.topbar-actions .icon-action:last-of-type');
+      if (helpIcon) {
+        helpIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const panel = document.getElementById('help-panel');
+          const dropdown = document.getElementById('notification-dropdown');
+          dropdown.style.display = 'none';
+          panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        });
+      }
+
+      // 7. Click outside dropdowns / sidebar to close
+      document.addEventListener('click', () => {
+        document.getElementById('notification-dropdown').style.display = 'none';
+        document.getElementById('help-panel').style.display = 'none';
+        document.getElementById('sidebar-drawer').classList.remove('active');
+      });
+
+      document.getElementById('notification-dropdown').addEventListener('click', (e) => e.stopPropagation());
+      document.getElementById('help-panel').addEventListener('click', (e) => e.stopPropagation());
+      document.getElementById('sidebar-drawer').addEventListener('click', (e) => e.stopPropagation());
+    });
+  </script>
+</body>
+</html>
